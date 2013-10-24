@@ -1,0 +1,76 @@
+#ifndef SYSTEMPARAM_H
+#define SYSTEMPARAM_H
+
+#define VAL 10
+#define INF 1.0e+14
+#define EPS 1.0e-14
+
+struct Size{
+
+  int x;
+  int y;
+  int z;
+  int V;
+  int d;
+  double B;
+
+};
+
+
+struct System{
+
+  int nmax;
+  double Vc;
+  double Ubb;
+  double Ubf;
+  double Vb1;
+  double Vb2;
+  double Uff;
+  double tb;
+  double tf;
+  double mu;
+  int w_num;
+  double Htr;
+  double Eu;
+  double Et;
+  double Ev2;
+  double Eh;
+  double dmu;
+
+};
+
+struct MC_p{
+
+  int seed;
+  int Nstep;
+  int Nthermal;
+  int Nsample;
+  int Ntest;
+  int Nchain;
+  int nc;
+
+};
+
+struct Parallel{
+
+  int p_num;
+  int my_rank;
+  int Ntdiv;
+  int Nsdiv, Nxdiv, Nydiv, Nzdiv;
+  int NtNs;
+  int Npara;
+  double B;
+  int x,y,z,V;
+  int np;
+  int ns;
+  int nt, nx, ny, nz;
+  int nst, nst0;
+
+  int upper;
+  int below;
+  int right[3];
+  int left[3];
+
+};
+
+#endif

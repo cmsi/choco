@@ -1,0 +1,122 @@
+#ifndef OBSERVE_H
+#define OBSERVE_H
+
+class Observable{
+
+  public:
+
+  //************* winding number *************
+  class WindingNumber{
+
+    long W2, s_W2; 
+    double *Wi2;
+    double B;
+    int V,Nx,Ny,Nz;
+
+    int Nd;
+    int *Ni;
+    int **bond;
+    System *sp;
+    int Nsample;
+    Lattice *LT;
+
+    public:
+    double local[2];
+    double global[2];
+    char file[128];
+
+    WindingNumber( int m_Nsample, System *m_sp, Size *m_N, Lattice *m_LT);
+    ~WindingNumber();
+
+    void init();
+    void measure(vector<GraphSpace::Event> &ev, GraphSpace::Event::Leg *world, int wnum);
+    void average();
+  };
+  //************* local and global density *************
+  class Density{
+
+    int V;
+    System *sp;
+    long val_g, s_val_g; //glabal
+    long *val_l; //local
+    int Nsample;
+    public:
+    double local[2];
+    double global[2];
+    char file[128];
+
+    void init();
+    void measure(vector<GraphSpace::Event> &ev,  GraphSpace::Event::Leg *world, int *wnum);
+    void average();
+    Density( int m_V, int m_Nsample, System *m_sp );
+    ~Density();
+
+  };
+  //************* kinetic and total energy *************
+  class Energy{
+
+    long long Nv; //バーテックスの総数
+    long long Nt; //kinkの総数
+    double Et;
+    double Eu;
+    double s_E;
+
+    double dummy;
+    System *sp;
+    Size *N;
+    int Nsample;
+
+    public:
+    double local[2];
+    double global[2];
+    char file[128];
+
+    Energy( int m_Nsample, System *m_sp, Size *m_N );
+    ~Energy();
+
+    void init();
+    void measure(vector<GraphSpace::Event> &ev,  GraphSpace::Event::Leg *world, int wnum);
+    void average();
+  };
+  //************* structure factor *************
+  class StructureFactor{
+
+    long val;
+
+    public:
+    double local[2];
+    double global[2];
+    char file[128];
+
+    void init();
+    void measure();
+    void average();
+  };
+  //*************************************************
+
+  WindingNumber WN;
+  Density Dns;
+  Energy Eng;
+  StructureFactor SSF;
+
+  char *obs;
+
+  private:
+  int Nsample;
+
+  public:
+  char parainfo[64];
+
+  Observable( char *m_obs, Size *m_N, Lattice *m_LT, int m_Nsample, System *m_sp,int MCS );
+  ~Observable();
+
+  void Init();
+  void Output(char *fname, double x, double g[2], double p_num); //$BJ?6Q2=$7$F=PNO(B
+  void Output(char *fname, double x, double g, double p_num); //$BJ?6Q2=$7$F=PNO(B
+  void Average();
+  void Measure( vector<GraphSpace::Event> &ev,  GraphSpace::Event::Leg *world ); //$B$H$K$+$/B-$9(B
+
+};
+
+
+#endif

@@ -1,0 +1,65 @@
+#ifndef PROB_H
+#define PROB_H
+
+#include <systemparameter.h>
+#include <stdma.h>
+
+class Probability{
+
+  int nmax;
+  double Ubb, V1, V2, tb, z;
+
+  public:
+
+  double dim, local_Et, rtmax, rv2max, dim2, local_Ev2;
+
+  class Omega{
+
+    public:
+    double val; 
+    int num;
+    bool off;
+    int i;
+  };
+
+  Probability( Size *N, System *sp );
+  ~Probability();
+  void LookUpTable( Size *N, System *sp );
+
+  int *Tr;
+
+  Omega *Om;
+
+  double ******t;
+  double *u;
+  double **v2;
+  double **w;
+  double **at;
+  double **av2;
+
+  double *ex_Wall;
+  double *ex_Penki;
+  double **Wall;
+  int curr_P;
+
+
+  private:
+
+  void Color();
+  void SolveWeightEquation(int cmax);
+
+  double at_make(int p, int q);
+  double au_make(int p);
+  double av2_make(int p, int q);
+
+  void look( Size *N, System *sp );
+
+  double Ttab( int type, int a, int b );
+  double Tuab(int i);
+  double Tv2ab(int i, int j);
+
+};
+
+
+
+#endif

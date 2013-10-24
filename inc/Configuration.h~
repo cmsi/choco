@@ -1,0 +1,195 @@
+#ifndef CONFIGURATION_H
+#define CONFIGURATION_H
+
+//#define triangle
+#define actime
+
+#include <stdio.h>
+
+#include <float.h>
+#include <math.h>
+#include <stdlib.h>
+#include <fstream>
+#include <iostream>
+using namespace std;
+
+#include <stack>
+#include <vector>
+#include <list>
+#include<algorithm>
+#include <stdma.h>
+#include <systemparameter.h>
+#include <My_rdm.boost.h>
+//#include <My_rdm.gsl.h>
+#include <Probability.h>
+#include <mpi.h>
+
+#define G_NMIN 1.0e-8
+#define NSAMPLE 100000
+
+
+#include <Lattice.h>
+
+//************************************GraphSpaceクラスここから***********************************************************
+
+class Quantities;
+
+class GraphSpace{
+
+  public:
+
+  double NMIN;
+
+  int my_rank;
+
+  //ワームはonsiteバーテックスとして扱い、双方向リストをつなぎ変えながら動く
+  class Event{
+
+    public:
+
+    class Leg{
+
+      public:
+      double t; //時間
+      short p;//粒子数
+      int i;//サイト
+      short type;//イベントのタイプ・・・ 偶数：右、奇数：左、
+                   //  -5:虚時間境界edge, -2(l),-4(r),:空間境界vertex, -1(l),-3(r),:空間境界kink, 1:2site-vertex, 2:kink, 3:2site-vertex(second nearest), 4:active "c"-worm, 5:active "a"-worm,  6:nonactive worm(素通りされる), 7:1-site
+      bool dir; // ワームが動く方向。上なら1、下なら0。 バーテックスの場合はパリティ
+
+      Event::Leg *next[2]; //上と下
+      Event::Leg *nleg; //となり
+
+    };
+
+    Leg leg[2]; //右左, onsiteのときは1だけ使う
+
+  };
+
+
+  Parallel *PR;
+
+  Event::Leg *world, *worldB; //t=0での各サイトの粒子数
+  std::vector<Event> ev;
+
+
+  int *Wnum;//ワームのイベント番号を保管 //ただし0番目はワームの個数
+  int **Switch;
+
+  double rt_i, rv2_i, rt_tot, rv2_tot, rw_tot, rtot;
+  double Pv2, Pv1, Pw;
+  double Wlen;
+  int Ncyc;//ワームの回数
+  int Nv;
+
+  Lattice *LT;
+  Probability *P;
+
+  int EVmax;
+
+  double B, Bh;
+  int V, Nx;
+  int D;
+  int VD;//全ボンド数
+
+  int nmax;
+  long long IMAX, WMAX;
+
+  public:
+
+  GraphSpace(Size *N, int m_nmax,Lattice *m_LT,Probability *m_P,Parallel *PR,  long long  m_IMAX,  long long  m_WMAX, char m_Eventfile[128],int nc, My_rdm *MR);
+  ~GraphSpace();
+  void Output(char fname[128], My_rdm *MR);
+
+
+  protected:
+
+  void OffDiagonal_Update( My_rdm *MR, Quantities *QNT );
+  bool Diagonal_Update( My_rdm *MR );
+  void Prob();
+
+  private:
+
+  Event::Leg **w;
+  Event::Leg **vertex;
+  Event::Leg *worm, *tail;
+
+
+
+  double *ver_time, *w_time;
+
+  //worm
+  void Put_worm( My_rdm *MR, int num, Quantities *QNT );
+  bool Next_event( My_rdm *MR, Quantities *QNT);
+  void transition(My_rdm *MR,int xx);
+  void t_update( My_rdm *MR, int b, int a, bool oh, bool dir );
+
+  inline double LengthofWalk( double next_t, double curr_t, bool dir );
+
+  void k_neibor();
+  void k_neibor_dir();
+  void v_neibor();
+  void v_neibor_dir();
+  void Newtime( int a, double dla);
+  void relink( bool b_dir, bool a_dir, bool aside );
+
+
+  void bounce(  bool oh , bool dir , int b, int a );
+  void pass(  bool oh , bool dir , int b, int a );
+  void hop(  bool oh , bool dir , int b, int a );
+  void turn(  bool oh , bool dir , int b, int a );
+
+//  void (GraphSpace::*Transition[4])(  bool oh , bool dir, int b, int a );
+
+  //vertex
+  void initial_functions();
+  void initialev( char m_Eventfile[128],int nc, My_rdm *MR);
+  void move_vertex( short type, int k );
+
+  void Assign_Vertex( My_rdm *MR );
+
+  inline double dtau( double R, double r_max);
+  void connect_before( Event::Leg *wl, Event::Leg *new_event );
+  void connect_after( Event::Leg **wl, Event::Leg *el, int x );
+
+  void insert_NewEvent( short type, double targ_time, int xl, int xr, int pl, int pr, int d );
+  void insert_NewWorm( double targ_time, int xl, int pl );
+
+
+};
+
+//************************************GraphSpaceクラスおわり***********************************************************
+
+//************************************Configurationクラスここから***********************************************************
+
+#include <Quantities.h>
+
+class Configuration : public GraphSpace {
+
+
+  Lattice *LT;
+  Size *N;
+  void initialization();
+  double BV;
+  int p_num;
+  MC_p *MC;
+  public:
+
+  Configuration( MC_p *m_MC, Size *N, int m_nmax,Lattice *m_LT, Probability *m_P,Parallel *PR,  long long  m_IMAX,  long long  m_WMAX, char m_Eventfile[128], My_rdm *MR );
+  ~Configuration();
+
+  void updateAnner( int MCS, My_rdm *MR, Quantities *QNT );
+
+
+  void update( int MCS, My_rdm *MR, Quantities *QNT);
+  void update( My_rdm *MR, Quantities *QNT );
+  void update( Quantities *QNT, My_rdm *MR );
+  void DeterminationNworm( int MCS, My_rdm *MR, Quantities *QNT );
+
+};
+
+//************************************Configurationクラスおわり***********************************************************
+
+
+#endif
+
